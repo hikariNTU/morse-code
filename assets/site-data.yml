@@ -1,0 +1,7 @@
+---
+title: Morse Code
+items:
+  -
+    icon: "mdi-radio-tower"
+    title: "Home"
+    to: "/"
