@@ -1,8 +1,8 @@
 <template>
   <div class="containers">
+    <div class="indicator" :style="{ opacity: show ? 1 : 0 }">MORSE CODE</div>
     <!-- Main container -->
-    <div class="container-block">
-      <h2>main</h2>
+    <ContainerBlock title="main">
       <div
         tabindex="0"
         :class="{ commander: true, on: show }"
@@ -16,58 +16,77 @@
 
       <div class="code-chunks">
         <div
-          v-for="(c, idx) in text"
+          v-for="(c, idx) in shortText"
           :key="idx"
           @click="() => playText(code[c] ? code[c] : null)"
+          :clickable="code[c] ? code[c] : null"
         >
           <pre>{{ code[c] || " " }}</pre>
           <div>{{ c }}</div>
         </div>
+        <div v-if="shortText.length < text.length">
+          <pre>…</pre>
+          <div>……</div>
+        </div>
       </div>
-    </div>
-    <!-- <div class="indicator" :style="{ opacity: show ? 1 : 0 }">morse code</div> -->
+    </ContainerBlock>
 
     <!-- Control Panel -->
-    <div class="container-block">
-      <h2>control panel</h2>
-      <v-form class="pa-5 control">
-        <v-row class="justify-space-around mb-3">
-          <v-btn @click="playSound = !playSound" icon elevation="2">
-            <v-icon> mdi-volume-{{ playSound ? "high" : "off" }} </v-icon>
-          </v-btn>
-          <v-btn @click.prevent="stopAll" icon elevation="2">
-            <v-icon>mdi-stop</v-icon>
-          </v-btn>
-          <v-btn type="submit" @click.prevent="playAll" color="primary">
-            Translate<v-icon>mdi-play</v-icon>
-          </v-btn>
-        </v-row>
-        <v-textarea
-          label="Input"
-          v-model="text"
-          @keydown.ctrl.13="playAll"
-          auto-grow
-        />
-      </v-form>
-    </div>
+    <ContainerBlock title="Control Panel" flex>
+      <v-textarea
+        class="ma-3"
+        label="Input Text"
+        v-model="text"
+        @keydown.ctrl.13="playAll"
+        auto-grow
+      />
+
+      <v-row
+        :class="{
+          'ma-0': true,
+          'mt-3': true,
+          control: true,
+          dark: this.$vuetify.theme.dark,
+        }"
+        :style="{ flexGrow: 0 }"
+      >
+        <v-tooltip bottom>
+          Toggle Mute
+          <template #activator="{ on }">
+            <v-btn v-on="on" tile icon @click="playSound = !playSound">
+              <v-icon> mdi-volume-{{ playSound ? "high" : "off" }} </v-icon>
+            </v-btn>
+          </template>
+        </v-tooltip>
+        <v-tooltip bottom>
+          Stop
+          <template #activator="{ on }">
+            <v-btn v-on="on" tile class="" icon @click.prevent="stopAll">
+              <v-icon>mdi-stop</v-icon>
+            </v-btn>
+          </template>
+        </v-tooltip>
+        <v-spacer />
+        <v-btn tile depressed class="secondary" @click.prevent="playAll">
+          Translate<v-icon>mdi-play</v-icon>
+        </v-btn>
+      </v-row>
+    </ContainerBlock>
 
     <!-- Code display area -->
     <style>
       {{displayStyle}}
     </style>
-    <div class="container-block">
-      <h2>translated code</h2>
+    <ContainerBlock title="translated code">
       <div class="wrap--code code">
         <!-- Use zero-space for wrapping -->
         <span v-for="(c, idx) in displayCode" :key="idx">{{ c }}&#8203;</span>
       </div>
-    </div>
+    </ContainerBlock>
 
     <!-- Setting Panel -->
-    <div class="container-block">
-      <h2>setting</h2>
-      <div class="d-flex flex-column text-left pa-7 rounded-lg">
-        <h3 class="mb-2"><v-icon>mdi-tune</v-icon> Setting</h3>
+    <ContainerBlock title="Setting">
+      <div class="d-flex flex-column text-left pa-5">
         <label for="base-time">base time</label>
         <v-slider
           v-model="baseTime"
@@ -136,17 +155,18 @@
           </template>
         </v-slider>
       </div>
-    </div>
+    </ContainerBlock>
   </div>
 </template>
 
 <script>
 import code from "~/assets/code-table.yml";
 import AudioBuzzer from "~/assets/audio";
+import ContainerBlock from "~/components/ContainerBlock";
 import { debounce, words } from "lodash";
 
 const _ALLOWANCE_CHAR = new Set(
-  "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.;!-_[]{}'\":/?<>()&%@#$ "
+  "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.;!-_'\"?()& "
 );
 const allowChar = (char) => {
   return _ALLOWANCE_CHAR.has(char);
@@ -159,6 +179,7 @@ const waitFor = (wait = 500) => {
 };
 
 export default {
+  components: { ContainerBlock },
   data() {
     return {
       au: null,
@@ -175,7 +196,11 @@ export default {
       currentPosition: -1,
     };
   },
+
   computed: {
+    shortText() {
+      return this.text?.length ? this.text.slice(0, 15) : "";
+    },
     displayStyle() {
       return `
       .wrap--code > span:nth-child(${this.currentPosition}) {
@@ -200,6 +225,7 @@ export default {
       },
     },
   },
+
   watch: {
     frequency() {
       this.au.frequency = this.frequency;
@@ -236,7 +262,11 @@ export default {
         }
       }
     },
-
+    /**
+     * @type function
+     * @description Debounce for input from key catcher.
+     * @returns {function} debounced playText()
+     */
     debouncedPlay: debounce(function () {
       this.playText();
     }, 500),
@@ -269,6 +299,7 @@ export default {
           break;
         default:
           if (e.key.length === 1 && allowChar(e.key)) {
+            e.preventDefault();
             this.text += e.key;
             this.debouncedPlay();
           }
@@ -365,14 +396,14 @@ $bcolor: #aaa2;
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-rows: repeat(2, calc((100vh - 68px) / 2));
-  grid-template-columns: 1fr 320px;
+  grid-template-columns: 1fr;
   border-top: solid $bcolor;
   border-left: solid $bcolor;
-  // justify-content: space-between;
-  // overflow-y: scroll;
-
-  // align-items: center;
+  @media screen and(min-width: 720px) {
+    grid-template-columns: 1fr 320px;
+    grid-template-rows: repeat(2, calc((100vh - 52px) / 2));
+    overflow-y: hidden;
+  }
   > div {
     border-bottom: solid $bcolor;
     border-right: solid $bcolor;
@@ -381,10 +412,6 @@ $bcolor: #aaa2;
   }
 }
 
-.control {
-  padding: 0.5rem;
-  min-width: 300px;
-}
 .code-chunks {
   margin: 1rem;
   text-align: center;
@@ -407,7 +434,7 @@ $bcolor: #aaa2;
       letter-spacing: 0.2em;
       font-weight: bold;
     }
-    &:hover {
+    &[clickable]:hover {
       cursor: pointer;
       background: #6662;
     }
@@ -470,11 +497,45 @@ $bcolor: #aaa2;
   }
 }
 .indicator {
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  bottom: 1rem;
+  left: 50%;
+  width: 10rem !important;
+  height: 2.5rem;
   letter-spacing: 0.1em;
+  font-size: small;
+  font-weight: 700;
   background: #3333;
-  padding: 1rem;
+  padding: 0.2rem;
   border-radius: 100rem;
+  transform: translateX(-50%);
   transition: opacity 0.1s;
+  z-index: 100;
+  user-select: none;
+  pointer-events: none;
+}
+.control {
+  border-top: solid #9995 1px;
+  @media screen and(min-width: 720px) {
+    position: sticky;
+    bottom: 0;
+  }
+  background: white;
+  z-index: 5;
+  > button {
+    margin: 0;
+    border: solid #9994;
+    border-width: 0 1px 0 0;
+    &:last-of-type {
+      border: none;
+    }
+  }
+  &.dark {
+    background: #111;
+  }
 }
 .code {
   // @extend %fc;
@@ -502,6 +563,8 @@ $bcolor: #aaa2;
   padding: 0;
   > h2 {
     all: unset;
+    position: sticky;
+    top: 0;
     box-sizing: border-box;
     display: block;
     width: calc(100%);
@@ -511,7 +574,34 @@ $bcolor: #aaa2;
     font-size: 0.8rem;
     border-bottom: solid #9992 1px;
     font-weight: bold;
+    background: #f9f9f9;
+    z-index: 2;
     // border-bottom: none;
   }
+  /* width */
+  // &::-webkit-scrollbar {
+  //   width: 5px;
+  //   height: 5px;
+  // }
+  // &::-webkit-scrollbar-button {
+  //   width: 5px;
+  //   background: #999;
+  //   &:hover {
+  //     background: #9997;
+  //     cursor: pointer;
+  //   }
+  // }
+  // /* Track */
+  // &::-webkit-scrollbar-track {
+  //   background: #9996;
+  // }
+
+  // /* Handle */
+  // &::-webkit-scrollbar-thumb {
+  //   background: #999a;
+  //   &:hover {
+  //     background: #999;
+  //   }
+  // }
 }
 </style>

@@ -3,7 +3,7 @@ const _DEFAULT_OSC_TYPE = 'sine'
 const _DEFAULT_BUZZ_FREQ = 550
 const _DEFAULT_VOLUME = 50
 
-const _MAX_FREQ = 20000  // protect ear
+const _MAX_FREQ = 15000  // protect ear
 const _EASE_AMOUNT = 0.002  // prevent clicking effect
 
 class AudioBuzzer {

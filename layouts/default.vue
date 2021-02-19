@@ -5,7 +5,6 @@
       v-model="drawer"
       :mini-variant="miniVariant"
       :clipped="clipped"
-      fixed
       app
     >
       <v-list>
@@ -27,16 +26,21 @@
     </v-navigation-drawer>
 
     <!-- App Top Bar -->
-    <v-app-bar :clipped-left="clipped" fixed elevation="0" app>
-      <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-      <v-btn icon @click.stop="miniVariant = !miniVariant">
+    <v-app-bar :clipped-left="clipped" flat dense app>
+      <v-app-bar-nav-icon @click.stop="drawer = !drawer" tile />
+      <v-btn icon tile @click.stop="miniVariant = !miniVariant">
         <v-icon>mdi-{{ `chevron-${miniVariant ? "right" : "left"}` }}</v-icon>
       </v-btn>
       <v-toolbar-title v-text="title" />
       <v-spacer></v-spacer>
-      <v-btn icon @click.stop="$vuetify.theme.dark ^= true">
-        <v-icon>mdi-theme-light-dark</v-icon>
-      </v-btn>
+      <v-tooltip bottom>
+        Toggle Dark mode
+        <template #activator="{ on }">
+          <v-btn tile v-on="on" icon @click.stop="$vuetify.theme.dark ^= true">
+            <v-icon>mdi-theme-light-dark</v-icon>
+          </v-btn>
+        </template>
+      </v-tooltip>
     </v-app-bar>
 
     <!-- Container -->
