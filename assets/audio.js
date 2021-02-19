@@ -1,4 +1,3 @@
-import { inRange } from 'lodash'
 const _DEFAULT_OSC_TYPE = 'sine'
 const _DEFAULT_BUZZ_FREQ = 550
 const _DEFAULT_VOLUME = 50
@@ -81,10 +80,11 @@ class AudioBuzzer {
 
   //Frequency
   set frequency(freq = _DEFAULT_BUZZ_FREQ) {
-    if (inRange(freq, 1, _MAX_FREQ)) {
-      this.oscillator.frequency.value = freq
+    let value = Number(freq)
+    if (!isNaN(value) && 1 <= value <= _MAX_FREQ) {
+      this.oscillator.frequency.setTargetAtTime(value, this.audioCtx.currentTime, _EASE_AMOUNT * 10)
     } else {
-      this.warn(`${freq} is not a valid value for frequency.`)
+      this.warn(`${value} is not a valid value for frequency.`)
     }
   }
   get frequency() {
