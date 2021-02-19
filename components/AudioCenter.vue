@@ -74,9 +74,9 @@
     </ContainerBlock>
 
     <!-- Code display area -->
-    <style>
-      {{displayStyle}}
-    </style>
+    <component :is="'style'">
+      {{ displayStyle }}
+    </component>
     <ContainerBlock title="translated code">
       <div class="wrap--code code">
         <!-- Use zero-space for wrapping -->

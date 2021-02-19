@@ -3,7 +3,10 @@ import colors from 'vuetify/es5/util/colors'
 export default {
   // Target: https://go.nuxtjs.dev/config-target
   target: 'static',
-
+  // Router setting: https://nuxtjs.org/docs/2.x/deployment/github-pages
+  router: {
+    base: '/morse-code/'
+  },
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
     titleTemplate: '%s - morse-code',
