@@ -248,7 +248,7 @@ export default {
       try {
         // Create an audio context for playing beeps
         this.au = new AudioBuzzer({
-          type: "hello",
+          type: "sine",
           frequency: this.frequency,
           volume: this.volume,
         });
