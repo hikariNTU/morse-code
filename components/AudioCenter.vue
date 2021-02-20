@@ -1,8 +1,24 @@
 <template>
   <div class="containers">
-    <div class="indicator" :style="{ opacity: show ? 1 : 0 }">MORSE CODE</div>
+    <!-- <div class="indicator" :style="{ opacity: show ? 1 : 0 }">MORSE CODE</div> -->
     <!-- Main container -->
     <ContainerBlock title="main">
+      <!-- <v-card width="250px" tabindex="1" class="align-self-center"> -->
+      <v-btn
+        fab
+        @click="resumeAudio"
+        @keydown="play"
+        @keyup="stop"
+        @mousedown="play"
+        @mouseout="stop"
+        @mouseup="stop"
+        @blur="stop"
+        color="secondary"
+        :class="{ 'red--text': show, 'morse-fab': true }"
+      >
+        <v-icon>mdi-broadcast</v-icon>
+      </v-btn>
+      <!-- </v-card> -->
       <div
         tabindex="0"
         :class="{ commander: true, on: show }"
@@ -18,7 +34,7 @@
         <div
           v-for="(c, idx) in shortText"
           :key="idx"
-          @click="() => playText(code[c] ? code[c] : null)"
+          @click="() => playText(code[c] ? c : null)"
           :clickable="code[c] ? code[c] : null"
         >
           <pre>{{ code[c] || " " }}</pre>
@@ -34,7 +50,7 @@
     <!-- Control Panel -->
     <ContainerBlock title="Control Panel" flex>
       <v-textarea
-        class="ma-3"
+        class="ma-2"
         label="Input Text"
         v-model="text"
         @keydown.ctrl.13="playAll"
@@ -61,14 +77,22 @@
         <v-tooltip bottom>
           Stop
           <template #activator="{ on }">
-            <v-btn v-on="on" tile class="" icon @click.prevent="stopAll">
+            <v-btn v-on="on" tile icon @click.prevent="stopAll">
               <v-icon>mdi-stop</v-icon>
+            </v-btn>
+          </template>
+        </v-tooltip>
+        <v-tooltip bottom>
+          Current Code Table
+          <template #activator="{ on }">
+            <v-btn v-on="on" tile icon @click.prevent="showCodeTable">
+              <v-icon>mdi-table-of-contents</v-icon>
             </v-btn>
           </template>
         </v-tooltip>
         <v-spacer />
         <v-btn tile depressed class="secondary" @click.prevent="playAll">
-          Translate<v-icon>mdi-play</v-icon>
+          Start<v-icon>mdi-play</v-icon>
         </v-btn>
       </v-row>
     </ContainerBlock>
@@ -87,6 +111,18 @@
     <!-- Setting Panel -->
     <ContainerBlock title="Setting">
       <div class="d-flex flex-column text-left pa-5">
+        <v-select
+          v-model="codeStandard"
+          :items="['international', 'american']"
+          append-outer-icon="mdi-book-open"
+          hint="Code Standard in use."
+          item-text="standard"
+          item-value="abbr"
+          label="Code Standard"
+        />
+        <v-btn @click="playSample" tile class="mb-3" depressed>
+          Play Test <v-icon>mdi-play</v-icon>
+        </v-btn>
         <label for="base-time">base time</label>
         <v-slider
           v-model="baseTime"
@@ -94,9 +130,11 @@
           :max="500"
           :min="5"
           hide-details
+          color="secondary"
         >
           <template v-slot:append>
             <v-text-field
+              color="secondary"
               id="base-time"
               v-model="baseTime"
               class="mt-0 pt-0"
@@ -110,6 +148,7 @@
         </v-slider>
         <label for="frequency">frequency</label>
         <v-slider
+          color="secondary"
           v-model="sqrtFreq"
           class="align-center"
           :max="10"
@@ -119,6 +158,7 @@
         >
           <template v-slot:append>
             <v-text-field
+              color="secondary"
               id="frequency"
               v-model="frequency"
               class="mt-0 pt-0"
@@ -132,6 +172,7 @@
         </v-slider>
         <label for="volume">volume</label>
         <v-slider
+          color="secondary"
           v-model="volume"
           class="align-center"
           :max="100"
@@ -140,6 +181,7 @@
         >
           <template v-slot:append>
             <v-text-field
+              color="secondary"
               id="volume"
               v-model="volume"
               class="mt-0 pt-0"
@@ -163,13 +205,12 @@
 import code from "~/assets/code-table.yml";
 import AudioBuzzer from "~/assets/audio";
 import ContainerBlock from "~/components/ContainerBlock";
-import { debounce, words } from "lodash";
+import { debounce } from "lodash";
 
-const _ALLOWANCE_CHAR = new Set(
-  "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.;!-_'\"?()& "
-);
+const _ALLOWANCE_CHAR = new Set(Object.keys(code.international.code));
+
 const allowChar = (char) => {
-  return _ALLOWANCE_CHAR.has(char);
+  return _ALLOWANCE_CHAR.has(char?.toLowerCase());
 };
 
 const waitFor = (wait = 500) => {
@@ -183,9 +224,9 @@ export default {
   data() {
     return {
       au: null,
-      code: code,
+      code: code.international.code,
       audioCtxAvailable: true,
-      text: "hello world",
+      text: "Hello World!",
       show: false,
       playSound: true,
       baseTime: 50,
@@ -194,12 +235,13 @@ export default {
       isRunning: {}, // storing running token for async calls
       whichKey: "",
       currentPosition: -1,
+      codeStandard: "international",
     };
   },
 
   computed: {
     shortText() {
-      return this.text?.length ? this.text.slice(0, 15) : "";
+      return this.text?.length ? this.text.slice(0, 65).toLowerCase() : "";
     },
     displayStyle() {
       return `
@@ -209,8 +251,8 @@ export default {
       `;
     },
     displayCode() {
-      return words(this.text.toLowerCase())
-        .join(" ")
+      return this.text
+        .toLowerCase()
         .split("")
         .map((char) => this.code[char])
         .filter((value) => value !== undefined)
@@ -236,6 +278,13 @@ export default {
     playSound() {
       if (!this.playSound) {
         this.au.stop();
+      }
+    },
+    codeStandard() {
+      let newCode = code[this.codeStandard]?.code;
+      if (newCode) {
+        this.code = newCode;
+        this.stopAll();
       }
     },
   },
@@ -320,6 +369,13 @@ export default {
     playAll() {
       this.playText();
     },
+    resumeAudio() {
+      if (this.playSound) this.au.resumePlay();
+    },
+    showCodeTable() {
+      this.stopAll();
+      this.text = Object.keys(this.code).join("");
+    },
     /**
      * Play given code for Morse Code Buzzer with proper set.
      * @param { String } text - Code sequence for AudioCtx to play
@@ -332,6 +388,14 @@ export default {
         displayPos = true;
       } else if (text === null) {
         return;
+      } else if (text) {
+        text = text
+          .split("")
+          .map((c) => {
+            return this.code[c];
+          })
+          .filter((v) => v)
+          .join("|");
       }
 
       // token lock
@@ -343,7 +407,7 @@ export default {
       // Register playing token in running sessions
       isRunning[sym] = true;
       // this is needed to resume audio ctx for auto-play policy
-      if (this.playSound) this.au.resumePlay();
+      this.resumeAudio();
       for (const [idx, c] of text.split("").entries()) {
         if (!isRunning[sym]) {
           // check if this session is tagged as clear
@@ -354,11 +418,19 @@ export default {
           case ".":
             await this.playInstance(1);
             break;
+          case "-":
+            await this.playInstance(2);
+            break;
           case "_":
             await this.playInstance(3);
             break;
+          case "4":
+            await this.playInstance(4);
+            break;
+          case "e":
+            await this.playInstance(11);
+            break;
           case "|":
-            // this.show = false;
             await waitFor(this.baseTime);
             break;
         }
@@ -369,7 +441,9 @@ export default {
       this.currentPosition = -1;
       delete isRunning[sym];
     },
-
+    playSample: function () {
+      this.playText("testing text.");
+    },
     stopAll() {
       this.stop(true);
       const isRunning = this.isRunning;
@@ -392,6 +466,10 @@ export default {
   align-items: center;
 }
 $bcolor: #aaa2;
+html,
+body {
+  overflow: auto;
+}
 .containers {
   width: 100%;
   height: 100%;
@@ -399,7 +477,9 @@ $bcolor: #aaa2;
   grid-template-columns: 1fr;
   border-top: solid $bcolor;
   border-left: solid $bcolor;
+  margin-bottom: 5rem;
   @media screen and(min-width: 720px) {
+    margin-bottom: 0;
     grid-template-columns: 1fr 320px;
     grid-template-rows: repeat(2, calc((100vh - 52px) / 2));
     overflow-y: hidden;
@@ -516,6 +596,12 @@ $bcolor: #aaa2;
   z-index: 100;
   user-select: none;
   pointer-events: none;
+}
+.morse-fab {
+  position: fixed;
+  z-index: 1000;
+  bottom: 1rem;
+  left: 1rem;
 }
 .control {
   border-top: solid #9995 1px;
