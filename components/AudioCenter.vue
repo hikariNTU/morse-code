@@ -13,6 +13,8 @@
         @mouseout="stop"
         @mouseup="stop"
         @blur="stop"
+        @touchstart.stop.prevent="play"
+        @touchend="stop"
         color="secondary"
         :class="{ 'red--text': show, 'morse-fab': true }"
       >
@@ -66,34 +68,29 @@
         }"
         :style="{ flexGrow: 0 }"
       >
-        <v-tooltip bottom>
+        <tooltip-icon-btn
+          :icon="`mdi-volume-${playSound ? 'high' : 'off'}`"
+          :action="() => (playSound = !playSound)"
+        >
           Toggle Mute
-          <template #activator="{ on }">
-            <v-btn v-on="on" tile icon @click="playSound = !playSound">
-              <v-icon> mdi-volume-{{ playSound ? "high" : "off" }} </v-icon>
-            </v-btn>
-          </template>
-        </v-tooltip>
-        <v-tooltip bottom>
-          Stop
-          <template #activator="{ on }">
-            <v-btn v-on="on" tile icon @click.prevent="stopAll">
-              <v-icon>mdi-stop</v-icon>
-            </v-btn>
-          </template>
-        </v-tooltip>
-        <v-tooltip bottom>
-          Current Code Table
-          <template #activator="{ on }">
-            <v-btn v-on="on" tile icon @click.prevent="showCodeTable">
-              <v-icon>mdi-table-of-contents</v-icon>
-            </v-btn>
-          </template>
-        </v-tooltip>
+        </tooltip-icon-btn>
+        <tooltip-icon-btn icon="mdi-stop" :action="stopAll">
+          Stop Playback
+        </tooltip-icon-btn>
+        <tooltip-icon-btn icon="mdi-table-of-contents" :action="showCodeTable">
+          Show Current Code Book
+        </tooltip-icon-btn>
+
         <v-spacer />
-        <v-btn tile depressed class="secondary" @click.prevent="playAll">
-          Start<v-icon>mdi-play</v-icon>
-        </v-btn>
+
+        <tooltip-icon-btn
+          icon="mdi-play"
+          text="start"
+          :action="playAll"
+          secondary
+        >
+          Play Input text using code table.
+        </tooltip-icon-btn>
       </v-row>
     </ContainerBlock>
 
@@ -206,6 +203,7 @@ import code from "~/assets/code-table.yml";
 import AudioBuzzer from "~/assets/audio";
 import ContainerBlock from "~/components/ContainerBlock";
 import { debounce } from "lodash";
+import TooltipIconBtn from "./TooltipIconBtn.vue";
 
 const _ALLOWANCE_CHAR = new Set(Object.keys(code.international.code));
 
@@ -220,7 +218,7 @@ const waitFor = (wait = 500) => {
 };
 
 export default {
-  components: { ContainerBlock },
+  components: { ContainerBlock, TooltipIconBtn },
   data() {
     return {
       au: null,
@@ -246,7 +244,7 @@ export default {
     displayStyle() {
       return `
       .wrap--code > span:nth-child(${this.currentPosition}) {
-        outline: #9995 solid;
+        outline: ${this.show ? "#e66" : "#9995"} solid;
       }
       `;
     },
@@ -293,6 +291,9 @@ export default {
   },
 
   methods: {
+    bindThis(handler) {
+      return handler.bind(this);
+    },
     async createAudioContext() {
       try {
         // Create an audio context for playing beeps
@@ -497,7 +498,6 @@ body {
   text-align: center;
   text-transform: capitalize;
   line-height: 1.7em;
-
   > div {
     display: inline-flex;
     flex-direction: column;
@@ -520,6 +520,7 @@ body {
     }
   }
 }
+
 .commander {
   position: relative;
   width: fit-content;
@@ -537,14 +538,10 @@ body {
   border: 0.2rem solid transparent;
   background-color: #9991;
   user-select: none;
-  // white-space: pre-wrap;
   overflow-wrap: break-word;
   word-break: break-all;
   cursor: pointer;
   transition: border-color 0.2s, background-color 0.1s, box-shadow 0.3s;
-  // &.on {
-  //   background-color: #2223;
-  // }
   &:hover {
     border-color: #9992;
   }
@@ -576,6 +573,7 @@ body {
     box-shadow: 0 0 0.1rem 2px #f222;
   }
 }
+
 .indicator {
   position: fixed;
   display: flex;
@@ -597,17 +595,26 @@ body {
   user-select: none;
   pointer-events: none;
 }
+
 .morse-fab {
   position: fixed;
   z-index: 1000;
-  bottom: 1rem;
+  bottom: 3rem;
   left: 1rem;
+  user-select: none;
+  touch-action: none;
+  @media screen and(min-width: 720px) {
+    bottom: 1rem;
+  }
 }
+
 .control {
   border-top: solid #9995 1px;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
   @media screen and(min-width: 720px) {
     position: sticky;
-    bottom: 0;
   }
   background: white;
   z-index: 5;
@@ -624,25 +631,14 @@ body {
   }
 }
 .code {
-  // @extend %fc;
-  // position: absolute;
-  // top: 0;
-  // left: 0;
-  // right: 0;
-  // bottom: 0;
   font-size: 1.8em;
   font-family: consolas, Courier, monospace;
-  // min-height: 20rem;
-  // max-width: 70%;
   padding: 1.5rem;
-  // background: #3331;
   color: #8889;
   letter-spacing: 0.03em;
   white-space: pre-wrap;
   overflow-wrap: break-all;
   word-break: break-all;
-  // user-select: none;
-  // pointer-events: none;
 }
 .container-block {
   margin: 0;
@@ -656,38 +652,11 @@ body {
     width: calc(100%);
     padding: 0.15rem 0.35rem;
     text-transform: capitalize;
-    // background-color: #9992;
     font-size: 0.8rem;
     border-bottom: solid #9992 1px;
     font-weight: bold;
     background: #f9f9f9;
     z-index: 2;
-    // border-bottom: none;
   }
-  /* width */
-  // &::-webkit-scrollbar {
-  //   width: 5px;
-  //   height: 5px;
-  // }
-  // &::-webkit-scrollbar-button {
-  //   width: 5px;
-  //   background: #999;
-  //   &:hover {
-  //     background: #9997;
-  //     cursor: pointer;
-  //   }
-  // }
-  // /* Track */
-  // &::-webkit-scrollbar-track {
-  //   background: #9996;
-  // }
-
-  // /* Handle */
-  // &::-webkit-scrollbar-thumb {
-  //   background: #999a;
-  //   &:hover {
-  //     background: #999;
-  //   }
-  // }
 }
 </style>
