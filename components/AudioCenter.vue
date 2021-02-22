@@ -57,6 +57,7 @@
         v-model="text"
         @keydown.ctrl.13="playAll"
         auto-grow
+        hint="Ctrl + Enter to Start Playing"
       />
 
       <v-row
@@ -126,6 +127,7 @@
           :min="5"
           hide-details
           color="secondary"
+          prepend-icon="mdi-play-speed"
         >
           <template v-slot:append>
             <v-text-field
@@ -150,6 +152,7 @@
           :min="1"
           :step="0.00001"
           hide-details
+          prepend-icon="mdi-waveform"
         >
           <template v-slot:append>
             <v-text-field
@@ -174,6 +177,11 @@
           :min="0"
           hide-details
         >
+          <template v-slot:prepend>
+            <v-icon @click="() => (playSound = !playSound)">
+              {{ `mdi-volume-${playSound ? "high" : "off"}` }}
+            </v-icon>
+          </template>
           <template v-slot:append>
             <v-text-field
               color="secondary"
@@ -201,9 +209,9 @@ import code from "~/assets/code-table.yml";
 import AudioBuzzer from "~/assets/audio";
 import ContainerBlock from "~/components/ContainerBlock";
 import { debounce } from "lodash";
-import TooltipIconBtn from "./TooltipIconBtn.vue";
-import CodeHelp from "./CodeHelp.vue";
-import CodeTable from "./CodeTable.vue";
+import TooltipIconBtn from "./TooltipIconBtn";
+import CodeHelp from "./CodeHelp";
+import CodeTable from "./CodeTable";
 
 const _ALLOWANCE_CHAR = new Set(Object.keys(code.international.code));
 
