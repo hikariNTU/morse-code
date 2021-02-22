@@ -4,6 +4,7 @@
     <div
       :class="{
         inner: true,
+        'new-scroll-bar': true,
         flex: flex,
       }"
     >
@@ -61,29 +62,31 @@ export default {
     outline: solid red;
     flex-grow: 1;
     overflow-y: auto;
-    &::-webkit-scrollbar {
-      width: 5px;
-      height: 5px;
+  }
+}
+.new-scroll-bar {
+  &::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  &::-webkit-scrollbar-button {
+    width: 5px;
+    background: #999;
+    &:hover {
+      background: #9997;
+      cursor: pointer;
     }
-    &::-webkit-scrollbar-button {
-      width: 5px;
-      background: #999;
-      &:hover {
-        background: #9997;
-        cursor: pointer;
-      }
-    }
-    /* Track */
-    &::-webkit-scrollbar-track {
-      background: #9996;
-    }
+  }
+  /* Track */
+  &::-webkit-scrollbar-track {
+    background: #9996;
+  }
 
-    /* Handle */
-    &::-webkit-scrollbar-thumb {
-      background: #999a;
-      &:hover {
-        background: #999;
-      }
+  /* Handle */
+  &::-webkit-scrollbar-thumb {
+    background: #999a;
+    &:hover {
+      background: #999;
     }
   }
 }

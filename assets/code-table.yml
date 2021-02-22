@@ -108,3 +108,33 @@ american:
     "(": '.....|-.'
     ")": '.....|..|..'
     '"': '..-.|-.'
+
+definition:
+  '.': 
+    - 1
+    - true
+    - Standard dot
+  '_': 
+    - 3
+    - true
+    - Standard Dash
+  '-':
+    - 2
+    - true
+    - Short Dash (American)
+  '|': 
+    - 1
+    - false
+    - inter-character break(3 length)
+  'x':
+    - 0
+    - false
+    - long break (American, 2 length)
+  '4':
+    - 4
+    - true
+    - long dash (American, 'L')
+  'e':
+    - 11
+    - true
+    - Even Longer dash (American, 0)

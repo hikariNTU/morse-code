@@ -68,29 +68,27 @@
         }"
         :style="{ flexGrow: 0 }"
       >
-        <tooltip-icon-btn
+        <TooltipIconBtn
           :icon="`mdi-volume-${playSound ? 'high' : 'off'}`"
           :action="() => (playSound = !playSound)"
         >
           Toggle Mute
-        </tooltip-icon-btn>
-        <tooltip-icon-btn icon="mdi-stop" :action="stopAll">
+        </TooltipIconBtn>
+        <TooltipIconBtn icon="mdi-stop" :action="stopAll">
           Stop Playback
-        </tooltip-icon-btn>
-        <tooltip-icon-btn icon="mdi-table-of-contents" :action="showCodeTable">
-          Show Current Code Book
-        </tooltip-icon-btn>
-
+        </TooltipIconBtn>
+        <CodeTable @show-table="showCodeTable" @play-text="playText" />
+        <CodeHelp />
         <v-spacer />
 
-        <tooltip-icon-btn
+        <TooltipIconBtn
           icon="mdi-play"
           text="start"
           :action="playAll"
           secondary
         >
           Play Input text using code table.
-        </tooltip-icon-btn>
+        </TooltipIconBtn>
       </v-row>
     </ContainerBlock>
 
@@ -204,6 +202,8 @@ import AudioBuzzer from "~/assets/audio";
 import ContainerBlock from "~/components/ContainerBlock";
 import { debounce } from "lodash";
 import TooltipIconBtn from "./TooltipIconBtn.vue";
+import CodeHelp from "./CodeHelp.vue";
+import CodeTable from "./CodeTable.vue";
 
 const _ALLOWANCE_CHAR = new Set(Object.keys(code.international.code));
 
@@ -218,7 +218,7 @@ const waitFor = (wait = 500) => {
 };
 
 export default {
-  components: { ContainerBlock, TooltipIconBtn },
+  components: { ContainerBlock, TooltipIconBtn, CodeHelp, CodeTable },
   data() {
     return {
       au: null,
@@ -381,7 +381,7 @@ export default {
      * Play given code for Morse Code Buzzer with proper set.
      * @param { String } text - Code sequence for AudioCtx to play
      */
-    playText: async function (text) {
+    playText: async function (text, directly = false) {
       // Prepare code to play
       let displayPos = false;
       if (text === undefined) {
@@ -390,13 +390,15 @@ export default {
       } else if (text === null) {
         return;
       } else if (text) {
-        text = text
-          .split("")
-          .map((c) => {
-            return this.code[c];
-          })
-          .filter((v) => v)
-          .join("|");
+        if (!directly) {
+          text = text
+            .split("")
+            .map((c) => {
+              return this.code[c];
+            })
+            .filter((v) => v)
+            .join("|");
+        }
       }
 
       // token lock
@@ -503,20 +505,25 @@ body {
     flex-direction: column;
     margin: 0.15rem;
     font-family: "Consolas", Courier, monospace;
-    background: #6661;
-    padding: 0.2rem;
-    border: solid 0.02rem #6662;
+    padding: 0.3rem;
+    // background: #6661;
+    // border: solid 0.02rem #6662;
     height: 2.5em;
     > pre {
-      color: #666;
+      color: #888;
       font-size: 0.7em;
       line-height: 0.8em;
       letter-spacing: 0.2em;
       font-weight: bold;
     }
-    &[clickable]:hover {
-      cursor: pointer;
-      background: #6662;
+    &[clickable] {
+      background: #8881;
+      border: solid 0.02rem #8882;
+
+      &:hover {
+        cursor: pointer;
+        background: #8882;
+      }
     }
   }
 }

@@ -67,5 +67,11 @@ export default {
       ...data,
     };
   },
+  mounted() {
+    setTimeout(() => {
+      let isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      this.$vuetify.theme.dark = isDark;
+    }, 500);
+  },
 };
 </script>
