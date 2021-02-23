@@ -18,7 +18,7 @@
         color="secondary"
         :class="{ 'red--text': show, 'morse-fab': true }"
       >
-        <v-icon>mdi-broadcast</v-icon>
+        <v-icon>{{ icons.mdiBroadcast }}</v-icon>
       </v-btn>
       <!-- </v-card> -->
       <div
@@ -70,20 +70,26 @@
         :style="{ flexGrow: 0 }"
       >
         <TooltipIconBtn
-          :icon="`mdi-volume-${playSound ? 'high' : 'off'}`"
+          :icon="playSound ? icons.mdiVolumeHigh : icons.mdiVolumeOff"
           :action="() => (playSound = !playSound)"
         >
           Toggle Mute
         </TooltipIconBtn>
-        <TooltipIconBtn icon="mdi-stop" :action="stopAll">
+        <TooltipIconBtn :icon="icons.mdiStop" :action="stopAll">
           Stop Playback
+        </TooltipIconBtn>
+        <TooltipIconBtn
+          :icon="repeat ? icons.mdiRepeat : icons.mdiRepeatOff"
+          :action="() => (repeat = !repeat)"
+        >
+          repeat {{ repeat }}
         </TooltipIconBtn>
         <CodeTable @show-table="showCodeTable" @play-text="playText" />
         <CodeHelp />
         <v-spacer />
 
         <TooltipIconBtn
-          icon="mdi-play"
+          :icon="icons.mdiPlay"
           text="start"
           :action="playAll"
           secondary
@@ -110,14 +116,14 @@
         <v-select
           v-model="codeStandard"
           :items="['international', 'american']"
-          append-outer-icon="mdi-book-open"
+          :append-outer-icon="icons.mdiBookOpen"
           hint="Code Standard in use."
           item-text="standard"
           item-value="abbr"
           label="Code Standard"
         />
         <v-btn @click="playSample" tile class="mb-3" depressed>
-          Play Test <v-icon>mdi-play</v-icon>
+          Play Test <v-icon>{{ icons.mdiPlay }}</v-icon>
         </v-btn>
         <label for="base-time">base time</label>
         <v-slider
@@ -127,7 +133,7 @@
           :min="5"
           hide-details
           color="secondary"
-          prepend-icon="mdi-play-speed"
+          :prepend-icon="icons.mdiPlaySpeed"
         >
           <template v-slot:append>
             <v-text-field
@@ -152,7 +158,7 @@
           :min="1"
           :step="0.00001"
           hide-details
-          prepend-icon="mdi-waveform"
+          :prepend-icon="icons.mdiWaveform"
         >
           <template v-slot:append>
             <v-text-field
@@ -179,7 +185,7 @@
         >
           <template v-slot:prepend>
             <v-icon @click="() => (playSound = !playSound)">
-              {{ `mdi-volume-${playSound ? "high" : "off"}` }}
+              {{ playSound ? icons.mdiVolumeHigh : icons.mdiVolumeOff }}
             </v-icon>
           </template>
           <template v-slot:append>
@@ -212,6 +218,20 @@ import { debounce } from "lodash";
 import TooltipIconBtn from "./TooltipIconBtn";
 import CodeHelp from "./CodeHelp";
 import CodeTable from "./CodeTable";
+import {
+  mdiPlay,
+  mdiPlaySpeed,
+  mdiBookOpen,
+  mdiWaveform,
+  mdiVolumeHigh,
+  mdiVolumeOff,
+  mdiBroadcast,
+  mdiHelp,
+  mdiStop,
+  mdiRepeat,
+  mdiRepeatOff,
+  mdiViewList,
+} from "@mdi/js";
 
 const _ALLOWANCE_CHAR = new Set(Object.keys(code.international.code));
 
@@ -242,6 +262,21 @@ export default {
       whichKey: "",
       currentPosition: -1,
       codeStandard: "international",
+      repeat: false,
+      icons: {
+        mdiPlay,
+        mdiPlaySpeed,
+        mdiBookOpen,
+        mdiWaveform,
+        mdiVolumeHigh,
+        mdiVolumeOff,
+        mdiBroadcast,
+        mdiHelp,
+        mdiStop,
+        mdiRepeat,
+        mdiRepeatOff,
+        mdiViewList,
+      },
     };
   },
 
@@ -371,13 +406,21 @@ export default {
       this.show = false;
       (this.playSound || force) && this.au.stop();
     },
+    playAll() {
+      this.playText();
+    },
+    stopAll() {
+      this.stop(true);
+      const isRunning = this.isRunning;
+      for (const key of Object.getOwnPropertySymbols(isRunning)) {
+        isRunning[key] = false;
+      }
+    },
     async playInstance(interval = 1) {
       this.play();
       await waitFor(interval * this.baseTime);
     },
-    playAll() {
-      this.playText();
-    },
+
     resumeAudio() {
       if (this.playSound) this.au.resumePlay();
     },
@@ -419,48 +462,48 @@ export default {
       isRunning[sym] = true;
       // this is needed to resume audio ctx for auto-play policy
       this.resumeAudio();
-      for (const [idx, c] of text.split("").entries()) {
-        if (!isRunning[sym]) {
-          // check if this session is tagged as clear
-          break;
+      do {
+        for (const [idx, c] of text.split("").entries()) {
+          if (!isRunning[sym]) {
+            // check if this session is tagged as clear
+            break;
+          }
+          if (displayPos) this.currentPosition = idx + 1;
+          switch (c) {
+            case ".":
+              await this.playInstance(1);
+              break;
+            case "-":
+              await this.playInstance(2);
+              break;
+            case "_":
+              await this.playInstance(3);
+              break;
+            case "4":
+              await this.playInstance(4);
+              break;
+            case "e":
+              await this.playInstance(11);
+              break;
+            case "|":
+              await waitFor(this.baseTime);
+              break;
+          }
+          this.stop();
+          await waitFor(this.baseTime);
         }
-        if (displayPos) this.currentPosition = idx + 1;
-        switch (c) {
-          case ".":
-            await this.playInstance(1);
-            break;
-          case "-":
-            await this.playInstance(2);
-            break;
-          case "_":
-            await this.playInstance(3);
-            break;
-          case "4":
-            await this.playInstance(4);
-            break;
-          case "e":
-            await this.playInstance(11);
-            break;
-          case "|":
-            await waitFor(this.baseTime);
-            break;
+        // End of loop
+        if (this.repeat && isRunning[sym]) {
+          await waitFor(this.baseTime * 6);
         }
-        this.stop();
-        await waitFor(this.baseTime);
-      }
+      } while (this.repeat && isRunning[sym]);
+
       // finish text token, clean up it
       this.currentPosition = -1;
       delete isRunning[sym];
     },
     playSample: function () {
       this.playText("testing text.");
-    },
-    stopAll() {
-      this.stop(true);
-      const isRunning = this.isRunning;
-      for (const key of Object.getOwnPropertySymbols(isRunning)) {
-        isRunning[key] = false;
-      }
     },
   },
 

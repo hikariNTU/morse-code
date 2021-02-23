@@ -61,7 +61,15 @@ export default {
           success: colors.green.accent3
         }
       }
-    }
+    },
+    icons: {
+      iconfont: 'mdiSvg',
+    },
+    defaultAssets: {
+      font: false,
+      icons: false,
+    },
+    treeShake: true,
   },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build

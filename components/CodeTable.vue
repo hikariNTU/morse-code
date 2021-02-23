@@ -4,7 +4,7 @@
       <TooltipIconBtn
         v-bind="attrs"
         v-on="on"
-        icon="mdi-view-list"
+        :icon="icons.mdiViewList"
         :action="() => (dialog = !dialog)"
       >
         Code Table
@@ -23,7 +23,6 @@
             <tr>
               <th class="text-left">Code Symbol</th>
               <th class="text-left">Duration</th>
-              <th class="text-left">Active</th>
               <th class="text-left">Description</th>
             </tr>
           </thead>
@@ -31,8 +30,10 @@
             <template v-for="(v, c) of code.definition">
               <tr :key="c">
                 <td>{{ c }}</td>
-                <td>{{ v[0] }}</td>
-                <td class="red--text">{{ v[1] ? "●" : "" }}</td>
+                <td>
+                  <span v-if="v[1]" class="red--text">●</span>
+                  {{ v[0] }}
+                </td>
                 <td>{{ v[2] }}</td>
                 <td></td>
               </tr>
@@ -75,6 +76,7 @@
 <script>
 import TooltipIconBtn from "./TooltipIconBtn.vue";
 import data from "~/assets/code-table.yml";
+import { mdiViewList } from "@mdi/js";
 import { mapValues } from "lodash";
 
 export default {
@@ -83,6 +85,9 @@ export default {
     return {
       dialog: false,
       code: data,
+      icons: {
+        mdiViewList,
+      },
     };
   },
   computed: {

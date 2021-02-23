@@ -2,6 +2,6 @@
 title: Morse Code
 items:
   -
-    icon: "mdi-radio-tower"
+    icon: "mdiRadioTower"
     title: "Home"
     to: "/"

@@ -4,7 +4,7 @@
       <TooltipIconBtn
         v-bind="attrs"
         v-on="on"
-        icon="mdi-help"
+        :icon="icons.mdiHelp"
         :action="() => (dialog = !dialog)"
       >
         Show Tips
@@ -42,11 +42,13 @@
 
 <script>
 import TooltipIconBtn from "./TooltipIconBtn.vue";
+import { mdiHelp } from "@mdi/js";
 export default {
   components: { TooltipIconBtn },
   data() {
     return {
       dialog: false,
+      icons: { mdiHelp },
     };
   },
 };

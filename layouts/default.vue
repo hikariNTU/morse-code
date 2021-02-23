@@ -16,7 +16,7 @@
           exact
         >
           <v-list-item-action>
-            <v-icon>{{ item.icon }}</v-icon>
+            <v-icon>{{ icons[item.icon] }}</v-icon>
           </v-list-item-action>
           <v-list-item-content>
             <v-list-item-title v-text="item.title" />
@@ -27,9 +27,13 @@
 
     <!-- App Top Bar -->
     <v-app-bar :clipped-left="clipped" flat dense app>
-      <v-app-bar-nav-icon @click.stop="drawer = !drawer" tile />
+      <v-app-bar-nav-icon @click.stop="drawer = !drawer" tile>
+        <v-icon>{{ icons.mdiMenu }}</v-icon>
+      </v-app-bar-nav-icon>
       <v-btn icon tile @click.stop="miniVariant = !miniVariant">
-        <v-icon>mdi-{{ `chevron-${miniVariant ? "right" : "left"}` }}</v-icon>
+        <v-icon>{{
+          miniVariant ? icons.mdiMenuRight : icons.mdiMenuLeft
+        }}</v-icon>
       </v-btn>
       <v-toolbar-title v-text="title" />
       <v-spacer></v-spacer>
@@ -37,7 +41,7 @@
         Toggle Dark mode
         <template #activator="{ on }">
           <v-btn tile v-on="on" icon @click.stop="$vuetify.theme.dark ^= true">
-            <v-icon>mdi-theme-light-dark</v-icon>
+            <v-icon>{{ icons.mdiThemeLightDark }}</v-icon>
           </v-btn>
         </template>
       </v-tooltip>
@@ -54,7 +58,13 @@
 
 <script>
 import data from "~/assets/site-data.yml";
-
+import {
+  mdiMenuLeft,
+  mdiMenuRight,
+  mdiThemeLightDark,
+  mdiRadioTower,
+  mdiMenu,
+} from "@mdi/js";
 export default {
   data() {
     return {
@@ -64,6 +74,13 @@ export default {
       miniVariant: false,
       right: true,
       rightDrawer: false,
+      icons: {
+        mdiMenuLeft,
+        mdiMenuRight,
+        mdiThemeLightDark,
+        mdiRadioTower,
+        mdiMenu,
+      },
       ...data,
     };
   },
