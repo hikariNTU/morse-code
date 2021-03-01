@@ -4,7 +4,6 @@
     <v-navigation-drawer
       v-model="drawer"
       :mini-variant="miniVariant"
-      :clipped="clipped"
       app
     >
       <v-list>
@@ -26,7 +25,7 @@
     </v-navigation-drawer>
 
     <!-- App Top Bar -->
-    <v-app-bar :clipped-left="clipped" flat dense app>
+    <v-app-bar flat dense app>
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" tile>
         <v-icon>{{ icons.mdiMenu }}</v-icon>
       </v-app-bar-nav-icon>
@@ -71,9 +70,7 @@ export default {
       clipped: false,
       drawer: false,
       fixed: false,
-      miniVariant: false,
-      right: true,
-      rightDrawer: false,
+      miniVariant: true,
       icons: {
         mdiMenuLeft,
         mdiMenuRight,
@@ -88,7 +85,7 @@ export default {
     setTimeout(() => {
       let isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       this.$vuetify.theme.dark = isDark;
-    }, 500);
+    }, 0);
   },
 };
 </script>

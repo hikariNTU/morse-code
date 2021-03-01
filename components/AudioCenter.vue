@@ -670,6 +670,7 @@ body {
   border-top: solid #9995 1px;
   position: fixed;
   bottom: 0;
+  left: 0;
   width: 100%;
   @media screen and(min-width: 720px) {
     position: sticky;

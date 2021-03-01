@@ -1,11 +1,12 @@
 import colors from 'vuetify/es5/util/colors'
+const _base = '/morse-code/'
 
 export default {
   // Target: https://go.nuxtjs.dev/config-target
   target: 'static',
   // Router setting: https://nuxtjs.org/docs/2.x/deployment/github-pages
   router: {
-    base: '/morse-code/'
+    base: _base
   },
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
@@ -20,7 +21,7 @@ export default {
       { hid: 'description', name: 'description', content: 'A Morse Code translator with different code-set.' }
     ],
     link: [
-      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+      { rel: 'shortcut icon', type: 'image/png', href: `${_base}favicon.png` }
     ]
   },
 
