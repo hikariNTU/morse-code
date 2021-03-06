@@ -125,6 +125,21 @@
         <v-btn @click="playSample" tile class="mb-3" depressed>
           Play Test <v-icon>{{ icons.mdiPlay }}</v-icon>
         </v-btn>
+
+        <v-switch v-model="useReverb" color="secondary" label="Use Reverb" />
+        <v-select
+          label="Reverb Profile"
+          hint="Credit to Reverb.js Library"
+          :append-outer-icon="icons.mdiWaveform"
+          :disabled="!useReverb"
+          v-model="reverbProfile"
+          :items="reverbList"
+          item-text="name"
+          item-value="url"
+          :class="reverbLoading ? 'primary' : null"
+          color="secondary"
+        ></v-select>
+
         <label for="base-time">base time</label>
         <v-slider
           v-model="baseTime"
@@ -158,7 +173,7 @@
           :min="1"
           :step="0.00001"
           hide-details
-          :prepend-icon="icons.mdiWaveform"
+          :prepend-icon="icons.mdiSineWave"
         >
           <template v-slot:append>
             <v-text-field
@@ -231,7 +246,10 @@ import {
   mdiRepeat,
   mdiRepeatOff,
   mdiViewList,
+  mdiSineWave,
 } from "@mdi/js";
+
+import reverbListData from "~/assets/reverbList";
 
 const _ALLOWANCE_CHAR = new Set(Object.keys(code.international.code));
 
@@ -262,6 +280,10 @@ export default {
       whichKey: "",
       currentPosition: -1,
       codeStandard: "international",
+      useReverb: false,
+      reverbList: reverbListData,
+      reverbProfile: "",
+      reverbLoading: false,
       repeat: false,
       icons: {
         mdiPlay,
@@ -276,6 +298,7 @@ export default {
         mdiRepeat,
         mdiRepeatOff,
         mdiViewList,
+        mdiSineWave,
       },
     };
   },
@@ -327,6 +350,16 @@ export default {
         this.code = newCode;
         this.stopAll();
       }
+    },
+    useReverb() {
+      if (this.useReverb) {
+        this.loadReverb();
+      } else {
+        this.au.stopConv();
+      }
+    },
+    reverbProfile() {
+      this.loadReverb();
     },
   },
   mounted() {
@@ -504,6 +537,11 @@ export default {
     },
     playSample: function () {
       this.playText("testing text.");
+    },
+    async loadReverb() {
+      this.reverbLoading = true;
+      const result = await this.au.useConv(this.reverbProfile);
+      this.reverbLoading = false;
     },
   },
 

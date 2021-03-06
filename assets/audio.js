@@ -42,6 +42,36 @@ class AudioBuzzer {
     console.log(`[${type}] ${message}`)
   }
 
+  async useConv(path = "/morse-code/FalklandPalaceRoyalTennisCourt.wav") {
+    if (!this.convolver) {
+      this.convolver = this.audioCtx.createConvolver();
+      // this.convolver.normalize = false
+      this.smootherGain.connect(this.convolver)
+    }
+    // load impulse response from file
+    try {
+      this.stopConv()
+      if (!path) return false;
+      let response = await fetch(path);
+      let arraybuffer = await response.arrayBuffer();
+      this.convolver.buffer = await this.audioCtx.decodeAudioData(arraybuffer);
+      this.convolver.connect(this.audioCtx.destination);
+      return true;
+      // this.smootherGain.disconnect()
+    } catch (e) {
+      throw (e)
+    }
+  }
+  stopConv() {
+    if (this.convolver) {
+      try {
+        this.convolver.disconnect()
+      } catch (e) {
+        throw (e)
+      }
+    }
+  }
+
   resumePlay() {
     if ((this.audioCtx.state === "suspended")) {
       this.audioCtx.resume();
