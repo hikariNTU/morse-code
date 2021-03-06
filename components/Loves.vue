@@ -22,6 +22,7 @@
 
 <script>
 export default {
+  name: "Loves",
   props: {
     duration: {
       default: 5,

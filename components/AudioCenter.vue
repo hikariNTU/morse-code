@@ -2,7 +2,7 @@
   <div class="containers">
     <!-- <div class="indicator" :style="{ opacity: show ? 1 : 0 }">MORSE CODE</div> -->
     <!-- Main container -->
-    <Loves v-if="fallLove" @time-up="fallLove = false" />
+    <LazyLoves v-if="fallLove" @time-up="fallLove = false" />
     <ContainerBlock title="main">
       <!-- <v-card width="250px" tabindex="1" class="align-self-center"> -->
       <v-btn
@@ -242,7 +242,7 @@ import { debounce } from "lodash";
 import TooltipIconBtn from "./TooltipIconBtn";
 import CodeHelp from "./CodeHelp";
 import CodeTable from "./CodeTable";
-import Loves from "~/components/Loves";
+// import Loves from "~/components/Loves";
 import {
   mdiPlay,
   mdiPlaySpeed,
@@ -274,7 +274,7 @@ const waitFor = (wait = 500) => {
 };
 
 export default {
-  components: { ContainerBlock, TooltipIconBtn, CodeHelp, CodeTable, Loves },
+  components: { ContainerBlock, TooltipIconBtn, CodeHelp, CodeTable },
   data() {
     return {
       au: null,
