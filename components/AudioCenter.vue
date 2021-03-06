@@ -2,6 +2,7 @@
   <div class="containers">
     <!-- <div class="indicator" :style="{ opacity: show ? 1 : 0 }">MORSE CODE</div> -->
     <!-- Main container -->
+    <Loves v-if="fallLove" @time-up="fallLove = false" />
     <ContainerBlock title="main">
       <!-- <v-card width="250px" tabindex="1" class="align-self-center"> -->
       <v-btn
@@ -126,7 +127,16 @@
           Play Test <v-icon>{{ icons.mdiPlay }}</v-icon>
         </v-btn>
 
-        <v-switch v-model="useReverb" color="secondary" label="Use Reverb" />
+        <v-row align="center" justify="center">
+          <v-progress-circular
+            v-show="reverbLoading"
+            indeterminate
+            size="20"
+            class="ma-3"
+          />
+          <v-switch v-model="useReverb" color="secondary" label="Use Reverb" />
+        </v-row>
+
         <v-select
           label="Reverb Profile"
           hint="Credit to Reverb.js Library"
@@ -136,7 +146,6 @@
           :items="reverbList"
           item-text="name"
           item-value="url"
-          :class="reverbLoading ? 'primary' : null"
           color="secondary"
         ></v-select>
 
@@ -233,6 +242,7 @@ import { debounce } from "lodash";
 import TooltipIconBtn from "./TooltipIconBtn";
 import CodeHelp from "./CodeHelp";
 import CodeTable from "./CodeTable";
+import Loves from "~/components/Loves";
 import {
   mdiPlay,
   mdiPlaySpeed,
@@ -264,7 +274,7 @@ const waitFor = (wait = 500) => {
 };
 
 export default {
-  components: { ContainerBlock, TooltipIconBtn, CodeHelp, CodeTable },
+  components: { ContainerBlock, TooltipIconBtn, CodeHelp, CodeTable, Loves },
   data() {
     return {
       au: null,
@@ -285,6 +295,7 @@ export default {
       reverbProfile: "",
       reverbLoading: false,
       repeat: false,
+      fallLove: false,
       icons: {
         mdiPlay,
         mdiPlaySpeed,
@@ -471,6 +482,7 @@ export default {
       if (text === undefined) {
         text = this.displayCode;
         displayPos = true;
+        if (this.text === "520") this.fallLove = true;
       } else if (text === null) {
         return;
       } else if (text) {
