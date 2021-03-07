@@ -123,9 +123,14 @@
           item-value="abbr"
           label="Code Standard"
         />
-        <v-btn @click="playSample" tile class="mb-3" depressed>
-          Play Test <v-icon>{{ icons.mdiPlay }}</v-icon>
-        </v-btn>
+        <v-tooltip top>
+          Play "{{ sampleText }}"
+          <template #activator="{ on }">
+            <v-btn v-on="on" @click="playSample" tile class="mb-3" depressed>
+              Play Test <v-icon>{{ icons.mdiPlay }}</v-icon>
+            </v-btn>
+          </template>
+        </v-tooltip>
 
         <v-row align="center" justify="center">
           <v-progress-circular
@@ -281,6 +286,7 @@ export default {
       code: code.international.code,
       audioCtxAvailable: true,
       text: "Hello World!",
+      sampleText: "testing text.",
       show: false,
       playSound: true,
       baseTime: 50,
@@ -375,9 +381,31 @@ export default {
   },
   mounted() {
     this.createAudioContext();
+    this.getFromUrl();
   },
 
   methods: {
+    getFromUrl() {
+      const query = this?.$route?.query;
+      if (query) {
+        const allowParam = new Set([
+          "text",
+          "playSound",
+          "baseTime",
+          "frequency",
+          "volume",
+          "codeStandard",
+          "useReverb",
+          "reverbProfile",
+        ]);
+        const filteredByKey = Object.fromEntries(
+          Object.entries(query).filter(([key, value]) => allowParam.has(key))
+        );
+        console.log(query);
+        console.log(filteredByKey);
+        Object.assign(this, filteredByKey);
+      }
+    },
     bindThis(handler) {
       return handler.bind(this);
     },
@@ -548,7 +576,7 @@ export default {
       delete isRunning[sym];
     },
     playSample: function () {
-      this.playText("testing text.");
+      this.playText(this.sampleText);
     },
     async loadReverb() {
       this.reverbLoading = true;

@@ -41,11 +41,12 @@ export default {
       return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
     },
     getRandomStyle() {
+      const size = Math.random();
       return {
-        width: `${3 * Math.random() + 1}rem`,
+        width: `${3 * size + 1}rem`,
         left: `${100 * Math.random()}%`,
         animationDelay: `${Math.random()}s`,
-        animationDuration: `${Math.random() + 1}s`,
+        animationDuration: `${3 - 2 * size}s`,
         fill: `hsl(12, 20, 50)`,
         opacity: `${Math.random() * 0.5 + 0.5}`,
       };
@@ -101,8 +102,7 @@ export default {
   > .falling-warper {
     position: absolute;
     top: -13vh;
-    left: 30%;
-    margin: 2rem;
+    left: 50%;
     width: 5rem;
     height: 5rem;
     > .love {

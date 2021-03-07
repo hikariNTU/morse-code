@@ -1,44 +1,50 @@
 <template>
-  <v-app>
-    <h1 v-if="error.statusCode === 404">
-      {{ pageNotFound }}
+  <v-container
+    fluid
+    class="pa-5 d-flex flex-column align-center justify-center"
+  >
+    <h1 class="text-h1 ma-5">
+      {{ error.statusCode === 404 ? pageNotFound : otherError }}
     </h1>
-    <h1 v-else>
-      {{ otherError }}
-    </h1>
-    <NuxtLink to="/">
-      Home page
-    </NuxtLink>
-  </v-app>
+    <v-simple-table dense>
+      <thead>
+        <tr>
+          <th class="text-left">Key</th>
+          <th class="text-left">Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(value, key) in error" :key="key">
+          <td>{{ key }}</td>
+          <td>{{ value }}</td>
+        </tr>
+      </tbody>
+    </v-simple-table>
+    <NuxtLink to="/" class="text-button"> Home page </NuxtLink>
+  </v-container>
 </template>
 
 <script>
 export default {
-  layout: 'empty',
+  layout: "empty",
   props: {
     error: {
       type: Object,
-      default: null
-    }
+      default: null,
+    },
   },
-  data () {
+  data() {
     return {
-      pageNotFound: '404 Not Found',
-      otherError: 'An error occurred'
-    }
+      pageNotFound: "404 Not Found",
+      otherError: "An error occurred",
+    };
   },
-  head () {
+  head() {
     const title =
-      this.error.statusCode === 404 ? this.pageNotFound : this.otherError
+      this.error.statusCode === 404 ? this.pageNotFound : this.otherError;
     return {
-      title
-    }
-  }
-}
+      title,
+    };
+  },
+};
 </script>
-
-<style scoped>
-h1 {
-  font-size: 20px;
-}
-</style>
