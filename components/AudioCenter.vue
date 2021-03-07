@@ -264,7 +264,7 @@ import {
   mdiSineWave,
 } from "@mdi/js";
 
-import reverbListData from "~/assets/reverbList";
+import reverbListData, { toUrl as toWavUrl } from "~/assets/reverbList";
 
 const _ALLOWANCE_CHAR = new Set(Object.keys(code.international.code));
 
@@ -282,26 +282,38 @@ export default {
   components: { ContainerBlock, TooltipIconBtn, CodeHelp, CodeTable },
   data() {
     return {
-      au: null,
-      code: code.international.code,
-      audioCtxAvailable: true,
+      // Text input
       text: "Hello World!",
       sampleText: "testing text.",
-      show: false,
+
+      // Code Standard
+      code: code.international.code,
+      codeStandard: "international",
+
+      // Setting
+      repeat: false,
       playSound: true,
       baseTime: 50,
       frequency: 440,
       volume: 50,
-      isRunning: {}, // storing running token for async calls
-      whichKey: "",
-      currentPosition: -1,
-      codeStandard: "international",
+
+      // Reverb
       useReverb: false,
       reverbList: reverbListData,
       reverbProfile: "",
       reverbLoading: false,
-      repeat: false,
+
+      // Sync Data
+      show: false,
       fallLove: false,
+      currentPosition: -1,
+
+      // Internal Data
+      au: null,
+      audioCtxAvailable: true,
+      whichKey: "",
+      // storing running token for async calls, I don't think I need to put it here
+      isRunning: {},
       icons: {
         mdiPlay,
         mdiPlaySpeed,
@@ -390,6 +402,7 @@ export default {
       if (query) {
         const allowParam = new Set([
           "text",
+          "repeat",
           "playSound",
           "baseTime",
           "frequency",
@@ -401,8 +414,9 @@ export default {
         const filteredByKey = Object.fromEntries(
           Object.entries(query).filter(([key, value]) => allowParam.has(key))
         );
-        console.log(query);
-        console.log(filteredByKey);
+        if (filteredByKey.reverbProfile) {
+          filteredByKey.reverbProfile = toWavUrl(filteredByKey.reverbProfile);
+        }
         Object.assign(this, filteredByKey);
       }
     },
@@ -580,7 +594,14 @@ export default {
     },
     async loadReverb() {
       this.reverbLoading = true;
-      const result = await this.au.useConv(this.reverbProfile);
+      try {
+        const result = await this.au.useConv(this.reverbProfile);
+        if (!result) {
+          this.reverbProfile = "";
+        }
+      } catch (e) {
+        this.reverbProfile = "";
+      }
       this.reverbLoading = false;
     },
   },

@@ -10,14 +10,17 @@ const reverbs = [{
   url: '',
 }]
 
+const toUrl = (name) => `${origin}${prefix}${name}${extension}`
+
 reverbs.push(...map(
   reverbNames,
   (name) => {
     return {
       name: upperFirst(lowerCase(name)),
-      url: `${origin}${prefix}${name}${extension}`,
+      url: toUrl(name),
     }
   }
 ))
 
+export { toUrl, reverbNames }
 export default reverbs

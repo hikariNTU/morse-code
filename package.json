@@ -7,7 +7,7 @@
     "build": "nuxt build",
     "start": "nuxt start",
     "generate": "nuxt generate",
-    "deploy": "push-dir --dir=dist --remote=github --branch=gh-pages --cleanup --verbose",
+    "deploy": "npx push-dir --dir=dist --remote=github --branch=gh-pages --cleanup --verbose",
     "test": "jest"
   },
   "dependencies": {
